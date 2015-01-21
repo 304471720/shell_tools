@@ -53,8 +53,6 @@ SendMsg()
         #echo  $tel $msgcont
 }
 
-#SendMsg 13121309305   "testtest"  'wireless.soufun.com/sms_validate/sendsms.do' test test 
-SendMsg 13121309305   "²âÊÔ²âÊÔ"  'wireless.soufun.com/sms_validate/sendsms.do' test test  
 
 
 
