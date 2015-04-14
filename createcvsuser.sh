@@ -1,4 +1,4 @@
-
+CVSROOT="$( cd "$( dirname "$0"  )" && pwd  )"
 echo $CVSROOT
 pwdfile="passwd"
 if [ -d $CVSROOT ];then
