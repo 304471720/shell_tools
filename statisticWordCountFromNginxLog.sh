@@ -25,3 +25,8 @@ print $7}}'| awk -F'&|=|?' '{for(i=2;i<=NF;i++){if( $i == "messagename")printf $
 done
 
 
+查看多个文件总大小
+du  -ch `sudo find /logs/soufunapp.3g.soufun.com/ /logs/soufunappesf.3g.soufun.com.log/ /logs/soufunappzf.3g.soufun.com.log/ -name *20150417*`
+
+
+
