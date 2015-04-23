@@ -1,0 +1,88 @@
+解决问题的脚本
+case "$1" in
+  start)
+    #########################  
+            filename=`basename $0`
+            xmlfile=$(echo $RESIN_CONF | awk '{print $2}')
+            echo  $xmlfile
+            echo "=======================================" >> $RESIN_HOME/log/$filename.log
+            echo `date "+%Y-%m-%d %H:%M:%S"`" before start ,check process status . if exist ,would be killed" >> $RESIN_HOME/log/$filename.log
+            pids=$(sudo ps aux | grep -v 'grep' | grep $xmlfile | awk  '{print $2}')
+            for pid in $pids
+            do
+                    pid_port=$(netstat -naop | grep $pid | grep 'LISTEN' | grep tcp |awk  '{print $4}' | awk -F[:] '{print $(NF)}')
+                    echo `date "+%Y-%m-%d %H:%M:%S"`" kill pid=$pid  pid_port=$pid_port"  >> $RESIN_HOME/log/$filename.log
+            done
+            if [ "$pids"x != ""x ]; then
+                    kill -TERM $pids
+                    echo `date "+%Y-%m-%d %H:%M:%S"`" all pids were be killed, there are:"$pids >> $RESIN_HOME/log/$filename.log
+            fi
+    #########################
+    ....
+    
+    
+    ===============================
+    未解决问题的脚本1
+    #########################  
+        filename=`basename $0`
+        xmlfile=$(echo $RESIN_CONF | awk '{print $2}')
+        echo  $xmlfile
+        echo "=======================================" >> $RESIN_HOME/log/$filename.log
+        echo `date "+%Y-%m-%d %H:%M:%S"`" before start ,check process status . if exist ,would be killed" >> $RESIN_HOME/log/$filename.log
+
+        resin_port=$(awk 'BEGIN{RS="<!--|-->"}NR%2' $xmlfile | sed -nr '/http address=/{s/.*port="(.*)".*/\1/;p}')
+        watchdog_port=$(awk 'BEGIN{RS="<!--|-->"}NR%2' $xmlfile | sed -nr '/server id=/{s/.*watchdog-port="(.*)".*/\1/;p}')
+        echo `date "+%Y-%m-%d %H:%M:%S"`" watchdog_port:"$watchdog_port >> $RESIN_HOME/log/$filename.log
+        echo `date "+%Y-%m-%d %H:%M:%S"`" resin_port:"$resin_port >> $RESIN_HOME/log/$filename.log
+
+        watchdog_pid=$(/usr/sbin/lsof -i:$watchdog_port | grep LISTEN | awk '{print $2}')
+        resin_pid=$(/usr/sbin/lsof -i:$resin_port | grep LISTEN | awk '{print $2}')
+
+        echo `date "+%Y-%m-%d %H:%M:%S"`" watchdog_pid:"$watchdog_pid >> $RESIN_HOME/log/$filename.log
+        echo `date "+%Y-%m-%d %H:%M:%S"`" resin_pid: "$resin_pid >> $RESIN_HOME/log/$filename.log
+
+        if [ "$watchdog_pid"x != ""x ]; then
+                echo "--------------" >> $RESIN_HOME/log/$filename.log
+                echo `date "+%Y-%m-%d %H:%M:%S"`" kill watchdog_pid= "$watchdog_pid  >> $RESIN_HOME/log/$filename.log
+                kill -9 $watchdog_pid
+        fi
+        if [ "$resin_pid"x != ""x ]; then
+                echo "--------------" >> $RESIN_HOME/log/$filename.log
+                echo `date "+%Y-%m-%d %H:%M:%S"`" kill resin_pid= "$resin_pid  >> $RESIN_HOME/log/$filename.log
+                kill -9 $resin_pid
+        fi
+#########################
+无效，多个进程启动，仍会出现端口被占用.
+
+
+
+========================================================
+代码:
+#########################  
+        filename=`basename $0`
+        echo  `date "+%Y-%m-%d %H:%M:%S"`" before start ,check process status . if exist ,would be killed" >> $RESIN_HOME/log/$filename.log
+        watch_dog_pid=`sudo sh $0 status | grep pid | awk -F ':' '{print $2+0}' | head -n 1`
+        echo  `date "+%Y-%m-%d %H:%M:%S"`" watch_dog_pid==== "$watch_dog_pid  >> $RESIN_HOME/log/$filename.log
+        process_pid=`  sudo sh $0 status | grep pid | awk -F ':' '{print $2+0}' | tail -n 1`
+        echo  `date "+%Y-%m-%d %H:%M:%S"`" process_pid==== "$process_pid >> $RESIN_HOME/log/$filename.log
+
+        if [ "$watch_dog_pid"x != ""x ]; then
+                echo "--------------" >> $RESIN_HOME/log/$filename.log
+                echo `date "+%Y-%m-%d %H:%M:%S"`" kill watch_dog_pid= "$watch_dog_pid  >> $RESIN_HOME/log/$filename.log
+                sudo kill -9 $watch_dog_pid
+        fi
+        if [ "$process_pid"x != ""x ]; then
+                echo "--------------" >> $RESIN_HOME/log/$filename.log
+                echo `date "+%Y-%m-%d %H:%M:%S"`" kill process_pid= "$process_pid  >> $RESIN_HOME/log/$filename.log
+                sudo kill -9 $process_pid
+        fi
+#########################
+无效，仍会出现端口被占用
+
+
+
+
+
+
+
+
